@@ -1,0 +1,62 @@
+body {
+    background-image: url('../imagen/background.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color:white;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#registro_cont {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: white; /* Ajustar el color del texto a blanco */
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#registro_cont.registro-form-container {
+    background-color: #031d25;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    color: #fff; /* Color de texto blanco */
+    padding: 2
+}
+
+.custom-container {
+    background-color: #031d25; /* Fondo gris */
+    padding: 20px; /* Espacio alrededor del contenido */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra */
+}
+
+.custom-container {
+    color: #71dada; /* Color del texto blanco */
+}
+
+.custom-btn {
+    background-color: #ff5a6d; /* Verde */
+    border-color: #ff5a6d; /* Color del borde igual al fondo */
+}
+
+.custom-btn:hover {
+    background-color: #71dada; /* Cambiar el color al pasar el cursor sobre el botón */
+}
