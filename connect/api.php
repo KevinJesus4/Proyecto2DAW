@@ -75,6 +75,7 @@ class Cliente {
         }
     }
 
+    //Verificar si funciona (queremos solo actualizar el email.)
     public function registrarCliente($nombre, $apellido, $email) {
         $sql = "INSERT INTO cliente (nombreCli, apellido, emailCli) VALUES ('$nombre', '$apellido', '$email')";
         
@@ -84,6 +85,18 @@ class Cliente {
             echo json_encode(array('mensaje' => 'Error al registrar cliente: ' . $this->conn->error));
         }
     }
+
+
+    public function actualizarCliente($email) {
+        $sql = "UPDATE INTO cliente (emailCli) VALUES ('$email')";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            echo json_encode(array('mensaje' => 'Email del cliente actualizado exitosamente'));
+        } else {
+            echo json_encode(array('mensaje' => 'Error al aactualizar el email del cliente: ' . $this->conn->error));
+        }
+    }
+    
 }
 
 
@@ -162,6 +175,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['ape
     $email = $_POST['email'];
     $cliente = new Cliente(); 
     $cliente->registrarCliente($nombre, $apellido, $email);
+}
+
+//Posibles cambios
+if ($_SERVER['REQUEST_METHOD'] === 'PUT' && isset($_POST['nombre'], $_POST['apellido'], $_POST['email'])) {
+    $nombre = $_POST['nombre'];
+    $apellido = $_POST['apellido'];
+    $email = $_POST['email'];
+    $cliente = new Cliente(); 
+    $cliente->actualizarCliente($email);
 }
 
 ?>

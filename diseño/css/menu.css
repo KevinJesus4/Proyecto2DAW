@@ -14,7 +14,7 @@ body {
 }
 
 .menu {
-    background-color: #f2f2f2;
+    background-color: #e3364a;
     padding: 10px;
 }
 
@@ -32,11 +32,13 @@ body {
     display: block;
     padding: 10px 20px;
     text-decoration: none;
-    color: #333;
+    color: white;
+    font-weight: bolder;
+    
 }
 
 .menu ul li a:hover {
-    background-color: #ddd;
+    background-color: #055259;
 }
 
 
@@ -45,6 +47,13 @@ body {
     height: auto;
     overflow: hidden;
 }
+
+.imagen-con-nombre p {
+    text-align: center;
+    font-weight: bolder;
+    color: #031d25;
+}
+
 
 #air-image {
     width: 100%;

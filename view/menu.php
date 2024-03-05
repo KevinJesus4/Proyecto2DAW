@@ -44,29 +44,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
     <div id="infoTienda" class="container">
     <h2>Información de la Tienda</h2>
     <p>¡Bienvenido a KevStore! Somos tu mejor opción para comprar zapatillas de calidad.</p>
-    <div id="imagen-container">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/nike1.png" alt="Nike Zapatilla 1" class="img-fluid">
-            </div>
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/nike2.jpg" alt="Nike Zapatilla 2" class="img-fluid">
-            </div>
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/nike3.png" alt="Nike Zapatilla 3" class="img-fluid">
-            </div>
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/adidas1.png" alt="Adidas Zapatilla 1" class="img-fluid">
-            </div>
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/adidas2.jpg" alt="Adidas Zapatilla 2" class="img-fluid">
-            </div>
-            <div class="col-md-4 mb-3">
-                <img src="/Proyecto/diseño/imagen/adidas3.png" alt="Adidas Zapatilla 3" class="img-fluid">
+        <div id="imagen-container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/nike1.png" alt="Nike Zapatilla 1" class="img-fluid">
+                        <p>Nike Air Monarch IV</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/nike2.jpg" alt="Nike Zapatilla 2" class="img-fluid">
+                        <p>Nike Air Force 1 Max</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/nike3.png" alt="Nike Zapatilla 3" class="img-fluid">
+                        <p>Nike Air Max</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/adidas1.jpg" alt="Adidas Zapatilla 1" class="img-fluid">
+                        <p>Adidas Gazelle</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/adidas2.jpg" alt="Adidas Zapatilla 2" class="img-fluid">
+                        <p>Adidas Forum</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="imagen-con-nombre">
+                        <img src="/Proyecto/diseño/imagen/adidas3.png" alt="Adidas Zapatilla 3" class="img-fluid">
+                        <p>Adidas Rivalry</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 
 
     <div id="marcas" class="container" style="display: none;">

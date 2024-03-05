@@ -15,17 +15,18 @@ class Token {
     }
 
     public function insertarToken($id_usuario) {
-
-        $session_duration = 3600;
+        
+        $session_duration = 5 * 24 * 60 * 60; // 5 días de duracion
+    
         $token = $this->generateToken();
         $token_expiracion = date('Y-m-d H:i:s', time() + $session_duration);
-
+    
         $query = "INSERT INTO token (token, fecha_expiracion, id_usuario) VALUES (?, ?, ?)";
         $statement = $this->conexion->prepare($query);
-        $statement->bind_param("sis", $token, $token_expiracion, $id_usuario);
+        $statement->bind_param("sss", $token, $token_expiracion, $id_usuario);
         $statement->execute();
     }
-
+    
     public function verificarToken($token, $id_usuario) {
 
         $current_time = date('Y-m-d H:i:s');
