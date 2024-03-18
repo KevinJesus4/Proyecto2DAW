@@ -30,7 +30,7 @@ class Token {
     public function verificarToken($token, $id_usuario) {
 
         $current_time = date('Y-m-d H:i:s');
-        $query = "SELECT * FROM tokens WHERE token = ? AND id_usuario = ? AND expires_at > ?";
+        $query = "SELECT * FROM token WHERE token = ? AND id_usuario = ? AND fecha_expiracion > ?";
         
         $statement = $this->conexion->prepare($query);
         $statement->bind_param("sis", $token, $id_usuario, $current_time);
@@ -39,6 +39,7 @@ class Token {
         $result = $statement->get_result();
         return $result->num_rows > 0;
     }
+    
 
     public function eliminarToken($token) {
 

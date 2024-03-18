@@ -90,15 +90,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
 
     <div id="marcas" class="container" style="display: none;">
         <h2>Marcas</h2>
-    </div>
+    </div><br>
 
     <div id="modelos" class="container" style="display: none;">
         <h2>Modelos</h2>
-    </div>
+    </div><br>
 
     <div id="productos" class="container" style="display: none;">
         <h2>Productos</h2>
-    </div>
+    </div><br>
 
     <div id="clientes" class="container" style="display: none;">
         <h2>Clientes</h2>

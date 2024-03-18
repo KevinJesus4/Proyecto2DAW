@@ -39,6 +39,7 @@ body {
 
 .menu ul li a:hover {
     background-color: #055259;
+    border-radius: 10px;
 }
 
 
