@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
             <li><a href="#" onclick="mostrarContenido('clientes')">Clientes</a></li>
             <li><a href="#" onclick="mostrarContenido('carrito')">Carrito</a></li>
         </ul>
-    </nav>
+    </nav><br>
 
     <div id="infoTienda" class="container">
     <h2>Información de la Tienda</h2>
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
 
     <div id="marcas" class="container" style="display: none;">
         <h2>Marcas</h2>
-    </div><br>
+    </div>
 
     <div id="modelos" class="container" style="display: none;">
         <h2>Modelos</h2>
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
 
     <div id="productos" class="container" style="display: none;">
         <h2>Productos</h2>
-    </div><br>
+    </div>
 
     <div id="clientes" class="container" style="display: none;">
         <h2>Clientes</h2>

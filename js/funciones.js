@@ -190,6 +190,27 @@ $(document).ready(function() {
 });
 
 
+function clienteSelect(callback) {
+    $.ajax({
+        url: 'http://localhost/Proyecto/connect/api.php/cliente',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log('Respuesta de la API:', response);
+            var clientes = response;
+
+            // Llamamos a la función de devolución de llamada con la lista de clientes
+            if (typeof callback === 'function') {
+                callback(clientes);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener clientes:', error);
+        }
+    });
+}
+
+
 function obtenerProductos() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/producto',
@@ -201,41 +222,48 @@ function obtenerProductos() {
             var table = $('<table>').addClass('table').css('background-color', '#E3E2E2'); // Añadir estilo de fondo de color directamente aquí
             var headerRow = $('<tr>');
             headerRow.append($('<th>').text('ID Producto'));
-            headerRow.append($('<th>').text('ID Marca'));
-            headerRow.append($('<th>').text('Nombre Marca'));
-            headerRow.append($('<th>').text('ID Modelo'));
-            headerRow.append($('<th>').text('Nombre Modelo'));
+            headerRow.append($('<th>').text('Marca'));
+            headerRow.append($('<th>').text('Modelo'));
             headerRow.append($('<th>').text('Stock'));
             headerRow.append($('<th>').text('Precio Unidad'));
-            headerRow.append($('<th>').text('Tallas'));
+            headerRow.append($('<th>').text('Cliente'));
             headerRow.append($('<th>').text('Cantidad'));
             headerRow.append($('<th>').text('Acción'));
             table.append(headerRow);
 
-            $.each(response, function(index, producto) {
-                var row = $('<tr>');
-                row.append($('<td>').text(producto.id_producto));
-                row.append($('<td>').text(producto.id_marca));
-                row.append($('<td>').text(producto.nombre_marca));
-                row.append($('<td>').text(producto.id_modelo));
-                row.append($('<td>').text(producto.nombre_modelo));
-                row.append($('<td>').text(producto.stock));
-                row.append($('<td>').text(producto.precioUnidad));
-                row.append($('<td>').text(producto.tallas));
-                
-                // Campo de entrada para la cantidad
-                var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).val(1);
-                row.append($('<td>').append(cantidadInput));
-                
-                // Botón para agregar al carrito
-                var botonAgregar = $('<button>').text('Agregar al carrito').click(function() {
-                    agregarAlCarrito(producto, cantidadInput.val());
-                });
-                row.append($('<td>').append(botonAgregar));
-                
-                table.append(row);
-            });
+            // Llamamos a la función clienteSelect para obtener la lista de clientes
+            clienteSelect(function(clientes) {
+                $.each(response, function(index, producto) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(producto.id_producto));
+                    row.append($('<td>').text(producto.nombre_marca));
+                    row.append($('<td>').text(producto.nombre_modelo));
+                    row.append($('<td>').text(producto.stock));
+                    row.append($('<td>').text(producto.precioUnidad));
 
+                    // Creamos el elemento select con las opciones de clientes
+                    var clienteSelect = $('<select>').attr('id', 'clienteSelect');
+                    $.each(clientes, function(index, cliente) {
+                        clienteSelect.append($('<option>').attr('value', cliente.id_cliente).text(cliente.nombreCli + ' ' + cliente.apellido));
+                    });
+                    row.append($('<td>').append(clienteSelect));
+
+                    // Campo de entrada para la cantidad
+                    var cantidad = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).val(1);
+                    row.append($('<td>').append(cantidad));
+
+                    // Botón para agregar al carrito
+                    var botonAgregar = $('<button>').text('Agregar al carrito').click(function() {
+                        var cliente = clienteSelect.val();
+                        agregarAlCarrito(cliente, producto.nombre_marca, producto.nombre_modelo, cantidad.val());
+                    });
+                    
+                    row.append($('<td>').append(botonAgregar));
+
+                    table.append(row);
+                });
+            });
+            
             $('#productos').append(table);
         },
         error: function(xhr, status, error) {
@@ -243,6 +271,9 @@ function obtenerProductos() {
         }
     });
 }
+
+
+
 
 
 
@@ -264,8 +295,6 @@ function actualizarPrecio() {
             success: function(response) {
                 console.log('Respuesta de la API:', response);
                 alert('Precio del producto actualizado con éxito');
-                // Si deseamos también podemos redirigir a alguna página de confirmación
-                // window.location.href = 'confirmacion.php';
             },
             error: function(xhr, status, error) {
                 console.error('Error al actualizar el precio del producto:', error);
@@ -284,11 +313,38 @@ $(document).ready(function() {
 });
 
 
-function agregarAlCarrito(producto) {
-    // Aquí puedes llamar a métodos de la clase Carrito para agregar el producto
-    // Por ejemplo:
-    carrito.agregarProducto(producto);
+function agregarAlCarrito(cliente, marca, modelo, cantidad) {
+    $.ajax({
+        url: 'http://localhost/Proyecto/connect/api.php/carrito',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            cliente: cliente,
+            marca: marca,
+            modelo: modelo,
+            cantidad: cantidad
+        },
+        success: function(response) {
+            console.log('Respuesta de la API:', response);
+            alert('Producto agregado al carrito exitosamente');
+            
+            $('#carrito').show();
+           
+            var carrito = new Carrito();
+            carrito.agregarAlCarrito(cliente, marca, modelo, cantidad);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al agregar el producto al carrito:', error);
+            alert('Error al agregar el producto al carrito. Mira la consola para más detalles sobre el error.');
+        }
+    });
 }
+
+
+
+
+
+
 
 
 
