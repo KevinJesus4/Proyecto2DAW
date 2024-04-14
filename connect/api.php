@@ -172,7 +172,7 @@ class Carrito {
             $stmt->bind_param("iii", $cliente, $marca, $modelo);
             $stmt->execute();
             $productoEnCarrito = $stmt->get_result()->fetch_assoc();
-
+    
             if ($productoEnCarrito) {
                 // Si el producto ya está en el carrito, actualizar la cantidad
                 $nuevaCantidad = $productoEnCarrito['cantidad'] + $cantidad;
@@ -187,13 +187,13 @@ class Carrito {
                 $stmt->bind_param("iiii", $cliente, $marca, $modelo, $cantidad);
                 $stmt->execute();
             }
-
+    
             // Actualizar el stock del producto en la tabla de productos
             $sql = "UPDATE Producto SET stock = stock - ? WHERE id_marca = ? AND id_modelo = ?";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("iii", $cantidad, $marca, $modelo);
             $stmt->execute();
-
+    
             // Devolver una respuesta exitosa
             echo json_encode(array('mensaje' => 'Producto agregado al carrito exitosamente'));
         } catch (Exception $e) {
@@ -201,6 +201,7 @@ class Carrito {
             echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $e->getMessage()));
         }
     }
+    
 }
 
 
@@ -264,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Devolver un mensaje de error si faltan los parámetros requeridos
             echo json_encode(array('error' => 'Se requieren cliente, marca, modelo y cantidad para agregar un producto al carrito.'));
         }
-    }
+    }   
 }
 
 
