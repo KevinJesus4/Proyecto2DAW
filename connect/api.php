@@ -119,12 +119,11 @@ class Producto {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-//*********************** */
     public function obtenerProductos() {
-        $sql = "SELECT p.id_producto, p.id_marca, m.nombre_marca, p.id_modelo, mo.nombre_modelo, p.stock, p.precioUnidad
+        $sql = "SELECT p.id, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, p.stock, p.precioUnidad
                 FROM Producto p
-                INNER JOIN Marca m ON p.id_marca = m.id_marca
-                INNER JOIN Modelo mo ON p.id_modelo = mo.id_modelo";
+                INNER JOIN Marca m ON p.marcaID = m.id
+                INNER JOIN Modelo mo ON p.modeloID = mo.id";
 
         $resultado = $this->conn->query($sql);
 
@@ -143,7 +142,7 @@ class Producto {
 
     //Dudas ------------------
     public function actualizarPrecio($id_producto, $nuevo_precio) {
-        $sql = "UPDATE Producto SET precioUnidad = ? WHERE id_producto = ?";
+        $sql = "UPDATE Producto SET precioUnidad = ? WHERE id = ?";
         
         $statement = $this->conn->prepare($sql);
         $statement->bind_param("di", $nuevo_precio, $id_producto); 
@@ -155,6 +154,18 @@ class Producto {
             echo json_encode(array('mensaje' => 'Error al actualizar el precio del producto'));
         }
     }
+
+    public function actualizarStock($productoID, $nuevoStock) {
+        $sql = "UPDATE Producto SET stock = ? WHERE id = ?";
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("ii", $nuevoStock, $productoID);
+        if ($statement->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
 }
 
 
@@ -165,44 +176,82 @@ class Carrito {
         $this->conn = connection::dbConnection();
     }
 
-    function agregarAlCarrito($cliente, $marca, $modelo, $cantidad) {
-        try {
-            $sql = "SELECT * FROM Carrito WHERE cliente = ? AND marca = ? AND modelo = ? LIMIT 1";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("iii", $cliente, $marca, $modelo);
-            $stmt->execute();
-            $productoEnCarrito = $stmt->get_result()->fetch_assoc();
+    public function obtenerCarrito() {
+        $sql = "SELECT c.id, c.clienteID, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
+                FROM Carrito c
+                INNER JOIN Producto p ON c.productoID = p.id
+                INNER JOIN Marca m ON p.marcaID = m.id
+                INNER JOIN Modelo mo ON p.modeloID = mo.id";
     
-            if ($productoEnCarrito) {
-                // Si el producto ya está en el carrito, actualizar la cantidad
-                $nuevaCantidad = $productoEnCarrito['cantidad'] + $cantidad;
-                $sql = "UPDATE Carrito SET cantidad = ? WHERE cliente = ? AND marca = ? AND modelo = ?";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->bind_param("iiii", $nuevaCantidad, $cliente, $marca, $modelo);
-                $stmt->execute();
-            } else {
-                // Si el producto no está en el carrito, insertarlo
-                $sql = "INSERT INTO Carrito (cliente, marca, modelo, cantidad) VALUES (?, ?, ?, ?)";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->bind_param("iiii", $cliente, $marca, $modelo, $cantidad);
-                $stmt->execute();
+        $statement = $this->conn->prepare($sql);
+        if (!$statement) {
+            header('Content-Type: application/json');
+            echo json_encode(array('error' => 'Error de preparación de la consulta: ' . $this->conn->error));
+            return;
+        }
+        
+        $statement->execute();
+        $resultado = $statement->get_result();
+    
+        if ($resultado->num_rows > 0) {
+            $carritos = array();
+            while ($fila = $resultado->fetch_assoc()) {
+                $carritos[] = $fila;
             }
-    
-            // Actualizar el stock del producto en la tabla de productos
-            $sql = "UPDATE Producto SET stock = stock - ? WHERE id_marca = ? AND id_modelo = ?";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("iii", $cantidad, $marca, $modelo);
-            $stmt->execute();
-    
-            // Devolver una respuesta exitosa
-            echo json_encode(array('mensaje' => 'Producto agregado al carrito exitosamente'));
-        } catch (Exception $e) {
-            // Manejar cualquier excepción que ocurra
-            echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $e->getMessage()));
+            header('Content-Type: application/json');
+            echo json_encode($carritos);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'No se encontraron carritos'));
         }
     }
     
+    function agregarAlCarrito($clienteID, $productoID, $cantidad) {
+        // Verificar si hay suficiente stock para la cantidad seleccionada
+        $sqlStock = "SELECT stock FROM Producto WHERE id = ?";
+        $statementStock = $this->conn->prepare($sqlStock);
+        $statementStock->bind_param("i", $productoID);
+        $statementStock->execute();
+        $resultStock = $statementStock->get_result();
+    
+        if ($resultStock->num_rows > 0) {
+            $row = $resultStock->fetch_assoc();
+            $stockActual = $row['stock'];
+    
+            if ($stockActual >= $cantidad) {
+                // Restar la cantidad seleccionada del stock
+                $nuevoStock = $stockActual - $cantidad;
+    
+                // Actualizar el stock en la tabla Productos
+                $producto = new Producto();
+                $producto->actualizarStock($productoID, $nuevoStock);
+    
+                // Agregar el producto al carrito
+                $sql = "INSERT INTO carrito (clienteID, productoID, cantidad) 
+                        VALUES (?, ?, ?)";
+    
+                $statement = $this->conn->prepare($sql);
+                $statement->bind_param("iii", $clienteID, $productoID, $cantidad);
+    
+                if ($statement->execute()) {
+                    http_response_code(200); // OK
+                    echo json_encode(array('mensaje' => 'Producto agregado al carrito correctamente'));
+                } else {
+                    http_response_code(500); // Internal Server Error
+                    echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $statement->error));
+                }
+            } else {
+                http_response_code(400); // Bad Request
+                echo json_encode(array('error' => 'No hay suficiente stock para la cantidad seleccionada'));
+            }
+        } else {
+            http_response_code(404); // Not Found
+            echo json_encode(array('error' => 'No se encontró el producto'));
+        }
+    }    
 }
+
+
 
 
 
@@ -226,7 +275,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
         $producto = new Producto();
         $producto->obtenerProductos();
-    }     
+    }elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
+        $producto = new Carrito();
+        $producto->obtenerCarrito();
+    }   
 }
 
 
@@ -246,26 +298,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo json_encode(array('error' => 'Se requieren nombre, apellido y email para registrar un cliente.'));
         }
-    } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
-        $data = json_decode(file_get_contents('php://input'), true);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
+            $input = json_decode(file_get_contents('php://input'), true);
     
-        if (isset($data['cliente'], $data['marca'], $data['modelo'], $data['cantidad'])) {
-            $cliente = $data['cliente'];
-            $marca = $data['marca'];
-            $modelo = $data['modelo'];
-            $cantidad = $data['cantidad'];
+            // Verificar si se proporcionan los datos necesarios
+            if (isset($input['clienteID'], $input['productoID'], $input['cantidad'])) {
+                // Obtener los datos del cuerpo de la solicitud
+                $clienteID = $input['clienteID'];
+                $productoID = $input['productoID'];
+                $cantidad = $input['cantidad'];
     
-            // Instanciar la clase Carrito y agregar el producto
-            $carrito = new Carrito();
-            $carrito->agregarAlCarrito($cliente, $marca, $modelo, $cantidad);
-    
-            // Devolver una respuesta exitosa
-            echo json_encode(array('mensaje' => 'Producto agregado al carrito exitosamente'));
-        } else {
-            // Devolver un mensaje de error si faltan los parámetros requeridos
-            echo json_encode(array('error' => 'Se requieren cliente, marca, modelo y cantidad para agregar un producto al carrito.'));
-        }
-    }   
+                // Instanciar la clase Carrito y agregar el producto al carrito
+                $carrito = new Carrito();
+                $carrito->agregarAlCarrito($clienteID, $productoID, $cantidad);
+            } else {
+                // Si faltan datos, devolver un mensaje de error
+                echo json_encode(array('error' => 'Se requieren clienteID, productoID y cantidad para agregar un producto al carrito.'));
+            }
+        } 
+    }
+     
 }
 
 

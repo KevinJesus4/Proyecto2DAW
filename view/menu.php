@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
         <div class="container">
             <a class="navbar-brand" href="#" style="color: white; font-weight: bold;">KevStore</a>
             <form id="logoutForm" class="form-inline my-2 my-lg-0" method="post" action="">
-                <button class="btn btn-danger my-2 my-sm-0" type="submit" name="logoutBtn">Cerrar sesión</button>
+                <button class="btn btn-danger my-2 my-sm-0" type="submit" name="logoutBtn">Cerrar sesiOOOón</button>
             </form>
         </div>
     </header>
@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logoutBtn'])) {
     </nav><br>
 
     <div id="infoTienda" class="container">
-    <h2>Información de la Tienda</h2>
-    <p>¡Bienvenido a KevStore! Somos tu mejor opción para comprar zapatillas de calidad.</p>
+    <h2>Información de la TiendAAAAa</h2>
+    <p>¡Bienvenido a KevStore! Somos tu mejor opción para comprar zapatillas de calidad AAAAA.</p>
         <div id="imagen-container">
             <div class="row">
                 <div class="col-md-4 mb-3">

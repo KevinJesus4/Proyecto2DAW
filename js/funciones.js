@@ -64,7 +64,9 @@ function obtenerMarcas() {
             var cuerpo = $('<tbody>');
 
             $.each(response, function(index, marca) {
-                var fila = $('<tr>').append($('<td>').text(marca.id_marca), $('<td>').text(marca.nombre_marca));
+                console.log(marca);
+                var fila = $('<tr>').append($('<td>').text(marca.id), $('<td>').text(marca.nombre_marca));
+
                 cuerpo.append(fila);
             });
             tabla.append(cuerpo);
@@ -94,7 +96,7 @@ function obtenerModelos() {
             var cuerpo = $('<tbody>');
 
             $.each(response, function(index, modelo) {
-                var fila = $('<tr>').append($('<td>').text(modelo.id_modelo), $('<td>').text(modelo.nombre_modelo));
+                var fila = $('<tr>').append($('<td>').text(modelo.id), $('<td>').text(modelo.nombre_modelo));
                 cuerpo.append(fila);
             });
             tabla.append(cuerpo);
@@ -125,7 +127,7 @@ function obtenerClientes() {
             var cuerpo = $('<tbody>');
 
             $.each(response, function(index, cliente) {
-                var fila = $('<tr>').append($('<td>').text(cliente.id_cliente), $('<td>').text(cliente.nombreCli), $('<td>').text(cliente.apellido), $('<td>').text(cliente.emailCli));
+                var fila = $('<tr>').append($('<td>').text(cliente.id), $('<td>').text(cliente.nombreCli), $('<td>').text(cliente.apellido), $('<td>').text(cliente.emailCli));
                 cuerpo.append(fila);
             });
             tabla.append(cuerpo);
@@ -235,28 +237,30 @@ function obtenerProductos() {
             clienteSelect(function(clientes) {
                 $.each(response, function(index, producto) {
                     var row = $('<tr>');
-                    row.append($('<td>').text(producto.id_producto));
+                    row.append($('<td>').text(producto.id));
                     row.append($('<td>').text(producto.nombre_marca));
                     row.append($('<td>').text(producto.nombre_modelo));
                     row.append($('<td>').text(producto.stock));
                     row.append($('<td>').text(producto.precioUnidad));
 
-                    // Creamos el elemento select con las opciones de clientes
+                    
                     var clienteSelect = $('<select>').attr('id', 'clienteSelect');
                     $.each(clientes, function(index, cliente) {
-                        clienteSelect.append($('<option>').attr('value', cliente.id_cliente).text(cliente.nombreCli + ' ' + cliente.apellido));
+                        clienteSelect.append($('<option>').attr('value', cliente.id).text(cliente.nombreCli + ' ' + cliente.apellido));
                     });
                     row.append($('<td>').append(clienteSelect));
 
-                    // Campo de entrada para la cantidad
-                    var cantidad = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).val(1);
-                    row.append($('<td>').append(cantidad));
+                    
+                    var cantidades = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).val(1);
+                    row.append($('<td>').append(cantidades));
 
-                    // Botón para agregar al carrito
                     var botonAgregar = $('<button>').text('Agregar al carrito').click(function() {
-                        var cliente = clienteSelect.val();
-                        agregarAlCarrito(cliente, producto.nombre_marca, producto.nombre_modelo, cantidad.val());
+                        var clienteID = clienteSelect.val();
+                        var cantidad = cantidades.val();
+                        agregarAlCarrito(producto, clienteID, cantidad);
                     });
+                    
+
                     
                     row.append($('<td>').append(botonAgregar));
 
@@ -313,32 +317,74 @@ $(document).ready(function() {
 });
 
 
-function agregarAlCarrito(cliente, marca, modelo, cantidad) {
+function agregarAlCarrito(producto, clienteID, cantidad) {
+    var datos = {
+        clienteID: clienteID,
+        productoID: producto.id,
+        cantidad: cantidad
+    };
+
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/carrito',
         type: 'POST',
         dataType: 'json',
-        data: {
-            cliente: cliente,
-            marca: marca,
-            modelo: modelo,
-            cantidad: cantidad
-        },
+        contentType: 'application/json',
+        data: JSON.stringify(datos), // Convertir datos a JSON
         success: function(response) {
             console.log('Respuesta de la API:', response);
             alert('Producto agregado al carrito exitosamente');
-            
-            $('#carrito').show();
-           
-            var carrito = new Carrito();
-            carrito.agregarAlCarrito(cliente, marca, modelo, cantidad);
         },
         error: function(xhr, status, error) {
-            console.error('Error al agregar el producto al carrito:', error);
-            alert('Error al agregar el producto al carrito. Mira la consola para más detalles sobre el error.');
+            console.error('Error al agregar producto al carrito:', error);
         }
     });
 }
+
+function obtenerCarrito() {
+    $.ajax({
+        url: 'http://localhost/Proyecto/connect/api.php/carrito',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#carrito').empty();
+
+            if (response.length > 0) {
+                var table = $('<table>').addClass('table').css('background-color', '#E3E2E2');
+                var headerRow = $('<tr>');
+                headerRow.append($('<th>').text('ID'));
+                headerRow.append($('<th>').text('Cliente ID'));
+                headerRow.append($('<th>').text('Marca'));
+                headerRow.append($('<th>').text('Modelo'));
+                headerRow.append($('<th>').text('Cantidad'));
+                headerRow.append($('<th>').text('Precio Unidad'));
+                table.append(headerRow);
+
+                $.each(response, function(index, item) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(item.id));
+                    row.append($('<td>').text(item.clienteID));
+                    row.append($('<td>').text(item.nombre_marca));
+                    row.append($('<td>').text(item.nombre_modelo));
+                    row.append($('<td>').text(item.cantidad));
+                    row.append($('<td>').text(item.precioUnidad));
+                    table.append(row);
+                });
+
+                $('#carrito').append(table);
+            } else {
+                $('#carrito').text('No hay elementos en el carrito.');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener el carrito:', error);
+            $('#carrito').text('Error al obtener el carrito.');
+        }
+    });
+}
+
+
+
+
 
 
 
