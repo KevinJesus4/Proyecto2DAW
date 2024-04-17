@@ -1,21 +1,3 @@
-$(document).ready(function () {
-    $('#loginForm').on('submit', function (event) {
-        event.preventDefault();
-        const usuario = $('#usuario').val();
-        const clave = $('#clave').val();
-        if (!usuario || !clave) {
-            alert('Es necesario completar todos los campos');
-            return; 
-        }
-    });
-
-    $('#logoutLink').on('click', function (event) {
-        event.preventDefault();
-        $('#logoutForm').submit();
-    });
-});
-
-
 function mostrarContenido(seccion) {
 
     if (seccion === 'inicio') {
@@ -279,8 +261,6 @@ function obtenerProductos() {
 
 
 
-
-
 function actualizarPrecio() {
     $('#formularioPrecio').submit(function(event) {
         event.preventDefault(); 
@@ -340,6 +320,7 @@ function agregarAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
+// Dentro de la función obtenerCarrito
 function obtenerCarrito() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/carrito',
@@ -357,6 +338,7 @@ function obtenerCarrito() {
                 headerRow.append($('<th>').text('Modelo'));
                 headerRow.append($('<th>').text('Cantidad'));
                 headerRow.append($('<th>').text('Precio Unidad'));
+                headerRow.append($('<th>').text('Acción'));
                 table.append(headerRow);
 
                 $.each(response, function(index, item) {
@@ -367,9 +349,14 @@ function obtenerCarrito() {
                     row.append($('<td>').text(item.nombre_modelo));
                     row.append($('<td>').text(item.cantidad));
                     row.append($('<td>').text(item.precioUnidad));
+       
+                    var botonEliminar = $('<button>').text('Eliminar').click(function() {
+                        carritoID = item.id;
+                        eliminarDelCarrito(carritoID); 
+                    });
+                    row.append($('<td>').append(botonEliminar));
                     table.append(row);
                 });
-
                 $('#carrito').append(table);
             } else {
                 $('#carrito').text('No hay elementos en el carrito.');
@@ -381,6 +368,33 @@ function obtenerCarrito() {
         }
     });
 }
+
+// Función para eliminar un producto del carrito
+function eliminarDelCarrito(carritoID) {
+    $.ajax({
+        url: 'http://localhost/Proyecto/connect/api.php/carrito',
+        type: 'DELETE',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify({ id: carritoID }), 
+        success: function(response) {
+            console.log('Producto eliminado del carrito:', response);
+            alert('Producto eliminado del carrito exitosamente');
+            obtenerCarrito();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar producto del carrito:', error);
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
 
 

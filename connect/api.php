@@ -207,7 +207,7 @@ class Carrito {
     }
     
     function agregarAlCarrito($clienteID, $productoID, $cantidad) {
-        // Verificar si hay suficiente stock para la cantidad seleccionada
+        
         $sqlStock = "SELECT stock FROM Producto WHERE id = ?";
         $statementStock = $this->conn->prepare($sqlStock);
         $statementStock->bind_param("i", $productoID);
@@ -219,14 +219,11 @@ class Carrito {
             $stockActual = $row['stock'];
     
             if ($stockActual >= $cantidad) {
-                // Restar la cantidad seleccionada del stock
-                $nuevoStock = $stockActual - $cantidad;
-    
-                // Actualizar el stock en la tabla Productos
+                
+                $nuevoStock = $stockActual - $cantidad;    
                 $producto = new Producto();
                 $producto->actualizarStock($productoID, $nuevoStock);
     
-                // Agregar el producto al carrito
                 $sql = "INSERT INTO carrito (clienteID, productoID, cantidad) 
                         VALUES (?, ?, ?)";
     
@@ -234,21 +231,35 @@ class Carrito {
                 $statement->bind_param("iii", $clienteID, $productoID, $cantidad);
     
                 if ($statement->execute()) {
-                    http_response_code(200); // OK
+                    http_response_code(200); 
                     echo json_encode(array('mensaje' => 'Producto agregado al carrito correctamente'));
                 } else {
-                    http_response_code(500); // Internal Server Error
+                    http_response_code(500); 
                     echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $statement->error));
                 }
             } else {
-                http_response_code(400); // Bad Request
+                http_response_code(400); 
                 echo json_encode(array('error' => 'No hay suficiente stock para la cantidad seleccionada'));
             }
         } else {
-            http_response_code(404); // Not Found
+            http_response_code(404); 
             echo json_encode(array('error' => 'No se encontró el producto'));
         }
-    }    
+    }
+    
+    public function eliminarDelCarrito($carritoID) {
+        $sql = "DELETE FROM Carrito WHERE id = ?";
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $carritoID);
+        
+        if ($statement->execute()) {
+            http_response_code(200);
+            echo json_encode(array('mensaje' => 'Producto eliminado del carrito correctamente'));
+        } else {
+            http_response_code(500);
+            echo json_encode(array('error' => 'Error al eliminar el producto del carrito: ' . $statement->error));
+        }
+    } 
 }
 
 
@@ -302,27 +313,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
             $input = json_decode(file_get_contents('php://input'), true);
     
-            // Verificar si se proporcionan los datos necesarios
+           
             if (isset($input['clienteID'], $input['productoID'], $input['cantidad'])) {
-                // Obtener los datos del cuerpo de la solicitud
+                
                 $clienteID = $input['clienteID'];
                 $productoID = $input['productoID'];
                 $cantidad = $input['cantidad'];
     
-                // Instanciar la clase Carrito y agregar el producto al carrito
                 $carrito = new Carrito();
                 $carrito->agregarAlCarrito($clienteID, $productoID, $cantidad);
             } else {
-                // Si faltan datos, devolver un mensaje de error
                 echo json_encode(array('error' => 'Se requieren clienteID, productoID y cantidad para agregar un producto al carrito.'));
             }
         } 
     }
      
 }
-
-
-
 
 //PUT
 
@@ -343,5 +349,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         }
     }
 }
+
+
+//DELETE
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    // Verificar la URI de la solicitud DELETE
+    if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
+        // Leer el cuerpo de la solicitud en formato JSON
+        $inputJSON = file_get_contents('php://input');
+        // Decodificar el JSON en un array asociativo
+        $data = json_decode($inputJSON, true);
+        // Verificar si el ID del producto está presente en el array
+        if (isset($data['id'])) {
+            // Obtener el ID del producto
+            $carritoID = $data['id'];
+            // Llamar a la función para eliminar el producto del carrito
+            $carrito = new Carrito();
+            $carrito->eliminarDelCarrito($carritoID);
+        } else {
+            // Si no se proporcionó el ID del producto, devolver un error
+            http_response_code(400);
+            echo json_encode(array('error' => 'No se proporcionó el ID del producto'));
+        }
+    } else {
+        // Si la URI de la solicitud DELETE no es la esperada, devolver un error
+        http_response_code(404);
+        echo json_encode(array('error' => 'La ruta solicitada no existe'));
+    }
+}
+
+
+
 
 ?>
