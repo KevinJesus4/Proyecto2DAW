@@ -17,29 +17,37 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualizar Precio de Producto</title>
+    <title>Agregar Nuevo Producto</title>
     <link rel="stylesheet" href="/Proyecto/diseño/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../diseño/css/formulario.css">
 </head>
 <body>
     <div class="container custom-container">
-        <h1>Actualizar Precio de Producto</h1>
-        <form id="formActualizarPrecio">
+        <h1>Agregar Nuevo Producto</h1>
+        <form id="formAgregarProducto">
             <div class="mb-3">
-                <label for="productoID" class="form-label">ID del Producto:</label>
-                <input type="number" class="form-control" id="productoID" name="productoID">
+                <label for="marcaID" class="form-label">ID de la Marca:</label><br>
+                <select class="form-select" id="marcaID" name="marcaID"></select>
             </div>
             <div class="mb-3">
-                <label for="nuevoPrecio" class="form-label">Nuevo Precio:</label>
-                <input type="number" class="form-control" id="nuevo_precio" name="nuevoPrecio" step="0.01">
+                <label for="modeloID" class="form-label">Modelo:</label><br>
+                <select class="form-select" id="modeloID" name="modeloID"></select>
             </div>
-            <button type="submit" class="btn btn-primary custom-btn">Actualizar Precio</button>
+
+            <div class="mb-3">
+                <label for="stock" class="form-label">Stock:</label>
+                <input type="number" class="form-control" id="stock" name="stock">
+            </div>
+            <div class="mb-3">
+                <label for="precioUnidad" class="form-label">Precio Unidad:</label>
+                <input type="number" class="form-control" id="precioUnidad" name="precioUnidad" step="0.01">
+            </div>
+            <button type="submit" class="btn btn-primary custom-btn">Agregar Producto</button>
             <button id="btnMenu" class="btn btn-success custom-btn">Ir al Menú</button>
         </form>
     </div>
@@ -49,3 +57,4 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
     <script src="../js/funciones.js"></script>
 </body>
 </html>
+

@@ -23,7 +23,7 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    color: white; /* Ajustar el color del texto a blanco */
+    color: white;
 }
 
 .form-control {
@@ -37,26 +37,26 @@ body {
 #registro_cont.registro-form-container {
     background-color: #031d25;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    color: #fff; /* Color de texto blanco */
+    color: #fff; 
     padding: 2
 }
 
 .custom-container {
-    background-color: #031d25; /* Fondo gris */
-    padding: 20px; /* Espacio alrededor del contenido */
-    border-radius: 10px; /* Bordes redondeados */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra */
+    background-color: #031d25; 
+    padding: 20px; 
+    border-radius: 10px; 
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
 }
 
 .custom-container {
-    color: #71dada; /* Color del texto blanco */
+    color: #71dada; 
 }
 
 .custom-btn {
-    background-color: #ff5a6d; /* Verde */
-    border-color: #ff5a6d; /* Color del borde igual al fondo */
+    background-color: #ff5a6d; 
+    border-color: #ff5a6d; 
 }
 
 .custom-btn:hover {
-    background-color: #71dada; /* Cambiar el color al pasar el cursor sobre el botón */
+    background-color: #71dada;
 }

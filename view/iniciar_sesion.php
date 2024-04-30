@@ -33,8 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
                     <label for="clave" class="form-label">Contraseña</label>
                     <input id="clave" name="clave" type="password" class="form-control">
                 </div>
-                <button type="submit" name="loginBtn" id="loginBtn" class="btn btn-primary btn-lg btn-block">Logiiiin</button>
-               
+                <button type="submit" name="loginBtn" id="loginBtn" class="btn btn-primary btn-lg btn-block">Iniciar Sesion</button>
             </form>
         </div>
     </div>

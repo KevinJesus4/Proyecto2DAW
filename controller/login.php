@@ -12,7 +12,6 @@ class login {
 
             $usuario = $_POST['usuario'];
             $clave = $_POST['clave'];
-        
             $query = "SELECT id, email, clave FROM usuario WHERE email = ?";
 
             $statement = $conn->prepare($query);
@@ -25,7 +24,6 @@ class login {
                 $user_id = $row['id'];
                 $stored_password = $row['clave'];
                 
-                // Comparar la contraseña ingresada con la contraseña almacenada
                 if ($clave === $stored_password) {
                     $token = new Token();
                     $token->insertarToken($user_id);
@@ -38,8 +36,6 @@ class login {
                 }
             }
         }
-    
-        // Si las credenciales son inválidas o no se proporcionaron, redirigir al usuario a la página de inicio de sesión
         header("Location: ../view/iniciar_sesion.php");
         exit();
     }

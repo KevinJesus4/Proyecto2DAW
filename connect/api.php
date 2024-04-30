@@ -20,12 +20,10 @@ class Usuario {
             }
             echo json_encode($usuarios);
         } else {
-            echo json_encode(array('mensaje' => 'No se encontraron usuarios'));
+            echo json_encode(array('mensaje' => 'No se han podido encontrar usuarios'));
         }
     }
 }
-
-
 
 class Marca {
 
@@ -45,11 +43,10 @@ class Marca {
             }
             echo json_encode($marcas);
         } else {
-            echo json_encode(array('mensaje' => 'No se encontraron marcas'));
+            echo json_encode(array('mensaje' => 'No se han podido encontrar marcas'));
         }
     }
 }
-
 
 class Cliente {
 
@@ -69,26 +66,61 @@ class Cliente {
             }
             echo json_encode($clientes);
         } else {
-            echo json_encode(array('mensaje' => 'No se encontraron clientes'));
+            echo json_encode(array('mensaje' => 'No se han podido encontrar clientes'));
         }
     }
 
-    //Verificar si funciona (queremos solo actualizar el email.)
-    public function registrarCliente($nombre, $apellido, $email) {
+
+    public function agregarCliente($nombreCli, $apellido, $emailCli) {
+        if (empty($nombreCli) || empty($apellido) || empty($emailCli)) {
+            http_response_code(400);
+            echo json_encode(array('error' => 'Todos los campos deben ser obligatorios.'));
+            return;
+        }
+        if (!filter_var($emailCli, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(array('error' => 'El formato del correo electrónico es inválido.'));
+            return;
+        }
+        if (!preg_match("/^[a-zA-Z-' ]*$/", $nombreCli) || !preg_match("/^[a-zA-Z-' ]*$/", $apellido)) {
+            http_response_code(400);
+            echo json_encode(array('error' => 'Los campos de nombre y apellido no pueden contener caracteres especiales.'));
+            return;
+        }
+    
         $sql = "INSERT INTO cliente (nombreCli, apellido, emailCli) VALUES (?, ?, ?)";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("sss", $nombreCli, $apellido, $emailCli);
         
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("sss", $nombre, $apellido, $email);
-        
-        if ($statement->execute()) {
-            echo json_encode(array('mensaje' => 'Cliente registrado exitosamente'));
+        if ($declarar->execute()) {
+            $mensaje = array('mensaje' => 'El cliente ha sido registrado con éxito');
+            echo json_encode($mensaje);
+            error_log("Cliente registrado exitosamente: " . json_encode($mensaje));
         } else {
-            echo json_encode(array('mensaje' => 'Error al registrar cliente: ' . $statement->error));
+            $mensaje = array('error' => 'Error al intentar registrar el cliente: ' . $declarar->error);
+            echo json_encode($mensaje);
+            error_log("Error al registrar el cliente: " . json_encode($mensaje));
+        }
+    }
+    
+    public function eliminarCliente($clienteID) {
+   
+        $sql = "DELETE FROM Cliente WHERE id = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("i", $clienteID); //entero
+    
+        if ($declarar->execute()) {
+            $mensaje = array('mensaje' => 'El cliente ha sido eliminado con éxito');
+            echo json_encode($mensaje);
+            error_log("Cliente eliminado exitosamente: " . json_encode($mensaje));
+        } else {
+            $mensaje = array('error' => 'Error al intentar eliminar el cliente: ' . $declarar->error);
+            echo json_encode($mensaje);
+            error_log("Error al eliminar el cliente: " . json_encode($mensaje));
         }
     }
     
 }
-
 
 class Modelo {
 
@@ -100,7 +132,6 @@ class Modelo {
     public function obtenerModelos() {
         $sql = "SELECT * FROM Modelo";
         $resultado = $this->conn->query($sql);
-        
         if ($resultado->num_rows > 0) {
             $modelos = array();
             while ($columna = $resultado->fetch_assoc()) {
@@ -111,6 +142,53 @@ class Modelo {
             echo json_encode(array('mensaje' => 'No se encontraron modelos'));
         }
     }
+
+    public function obtenerModeloPorID($modeloID) {
+        $sql = "SELECT * FROM Modelo WHERE id = ?";
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $modeloID);
+        $statement->execute();
+        
+        $resultado = $statement->get_result();
+        
+        if ($resultado->num_rows > 0) {
+            $modelo = $resultado->fetch_assoc();
+            echo json_encode($modelo);
+        } else {
+            echo json_encode(array('mensaje' => 'Modelo no encontrado'));
+        }
+    }
+
+    public function agregarModelo($nombre_modelo) {
+        if(empty($nombre_modelo)) {
+            echo json_encode(array('error' => 'El nombre del modelo no puede estar vacío'));
+            return;
+        }
+        if (!preg_match('/^[a-zA-Z0-9\s]+$/', $nombre_modelo)) {
+            echo json_encode(array('error' => 'El nombre del modelo solo puede contener letras, números y espacios'));
+            return;
+        }
+        
+        $sql = "SELECT id FROM Modelo WHERE nombre_modelo = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("s", $nombre_modelo);
+        $declarar->execute();
+        $declarar->store_result();
+        if ($declarar->num_rows > 0) {
+            echo json_encode(array('error' => 'El modelo ya existe'));
+            return;
+        }
+        
+        $sql_insert = "INSERT INTO Modelo (nombre_modelo) VALUES (?)";
+        $declarar_insert = $this->conn->prepare($sql_insert);
+        $declarar_insert->bind_param("s", $nombre_modelo);
+        if ($declarar_insert->execute()) {
+            $modeloID = $declarar_insert->insert_id;
+            echo json_encode(array('mensaje' => 'Modelo agregado correctamente', 'modeloID' => $modeloID));
+        } else {
+            echo json_encode(array('error' => 'Error al agregar el modelo: ' . $declarar_insert->error));
+        }
+    } 
 }
 
 class Producto {
@@ -119,6 +197,7 @@ class Producto {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
+    
     public function obtenerProductos() {
         $sql = "SELECT p.id, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, p.stock, p.precioUnidad
                 FROM Producto p
@@ -129,7 +208,6 @@ class Producto {
 
         if ($resultado->num_rows > 0) {
             $productos = array();
-
             while ($columna = $resultado->fetch_assoc()) {
                 $productos[] = $columna;
             }
@@ -138,28 +216,118 @@ class Producto {
             echo json_encode(array('mensaje' => 'No se encontraron productos'));
         }
     }
-   
 
-    //Dudas ------------------
-    public function actualizarPrecio($id_producto, $nuevo_precio) {
-        $sql = "UPDATE Producto SET precioUnidad = ? WHERE id = ?";
+    public function obtenerProductoPorId($productoId) {
+        $sql = "SELECT p.id, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, p.stock, p.precioUnidad
+        FROM Producto p
+        INNER JOIN Marca m ON p.marcaID = m.id
+        INNER JOIN Modelo mo ON p.modeloID = mo.id
+        WHERE p.id = ?";
+
         
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("di", $nuevo_precio, $id_producto); 
-        $statement->execute();
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("i", $productoId);
+        $declarar->execute();
         
-        if ($statement->affected_rows > 0) {
-            echo json_encode(array('mensaje' => 'Precio del producto actualizado exitosamente'));
+        $resultado = $declarar->get_result();
+        
+        if ($resultado->num_rows > 0) {
+            $producto = $resultado->fetch_assoc();
+            header('Content-Type: application/json');
+            echo json_encode($producto);
         } else {
-            echo json_encode(array('mensaje' => 'Error al actualizar el precio del producto'));
+            header('Content-Type: application/json', true, 404);
+            echo json_encode(array('mensaje' => 'Producto no encontrado'));
+        }
+    }
+    
+    public function agregarProducto($marcaID, $modeloID, $stock, $precioUnidad) {
+
+        if (empty($marcaID) || empty($modeloID) || empty($stock) || empty($precioUnidad) ||
+            !is_numeric($marcaID) || !is_numeric($modeloID) || !is_numeric($stock) || !is_numeric($precioUnidad)) {
+            echo json_encode(array('error' => 'Todos los campos son obligatorios y deben ser números'));
+            return;
+        }
+        
+        if ($marcaID <= 0 || $modeloID <= 0 || $stock <= 0 || $precioUnidad <= 0) {
+            echo json_encode(array('error' => 'Todos los campos deben ser valores positivos'));
+            return;
+        }
+
+        if (!preg_match('/^[0-9]+$/', $stock) || 
+            !preg_match('/^[0-9]+(?:\.[0-9]+)?$/', $precioUnidad)) {
+            echo json_encode(array('error' => 'Los campos contienen caracteres no válidos'));
+            return;
+        }
+        $sql = "INSERT INTO Producto (marcaID, modeloID, stock, precioUnidad) VALUES (?, ?, ?, ?)";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("iiid", $marcaID, $modeloID, $stock, $precioUnidad);
+        
+        if ($declarar->execute()) {
+            echo json_encode(array('mensaje' => 'Nuevo producto agregado exitosamente'));
+        } else {
+            echo json_encode(array('error' => 'Error al agregar el nuevo producto: ' . $declarar->error));
+        }
+    }
+   
+    public function actualizarPrecio($productoID, $nuevo_precio) {
+
+        if (!preg_match('/^[0-9]+(?:\.[0-9]+)?$/', $nuevo_precio)) {
+            echo json_encode(array('error' => 'El nuevo precio contiene caracteres no válidos'));
+            return;
+        }
+
+        $sql = "SELECT id FROM Producto WHERE id = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("i", $productoID); 
+        $declarar->execute();
+        $declarar->store_result();
+    
+        if ($declarar->num_rows == 1) {
+            $sql_actualizar = "UPDATE Producto SET precioUnidad = ? WHERE id = ?";
+            $declarar_actualizar = $this->conn->prepare($sql_actualizar);
+            $declarar_actualizar->bind_param("di", $nuevo_precio, $productoID); 
+            $declarar_actualizar->execute();
+            
+            if ($declarar_actualizar->affected_rows > 0) {
+                echo json_encode(array('mensaje' => 'El precio del producto se ha actualizado exitosamente'));
+            } else {
+                echo json_encode(array('error' => 'Error al tratar de actualizar el precio del producto'));
+            }
+        } else {
+            echo json_encode(array('error' => 'El producto que estas indicando no existe'));
+        }
+    }
+    
+    public function actualizarStock($productoID, $nuevoStock) {
+        $sql = "UPDATE Producto SET stock = ? WHERE id = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("ii", $nuevoStock, $productoID);
+        if ($declarar->execute()) {
+            return true;
+        } else {
+            return false;
         }
     }
 
-    public function actualizarStock($productoID, $nuevoStock) {
-        $sql = "UPDATE Producto SET stock = ? WHERE id = ?";
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("ii", $nuevoStock, $productoID);
-        if ($statement->execute()) {
+    public function eliminarProducto($productoID) {
+        $sql = "DELETE FROM Producto WHERE id = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("i", $productoID);
+
+        if ($declarar->execute()) {
+            echo json_encode(array('mensaje' => 'Producto eliminado exitosamente'));
+        } else {
+            echo json_encode(array('error' => 'Error al eliminar el producto: ' . $declarar->error));
+        }
+    }
+
+    public function actualizarStockAlEliminarDelCarrito($productoID, $cantidad) {
+        $sql = "UPDATE Producto SET stock = stock + ? WHERE id = ?";
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("ii", $cantidad, $productoID);
+        
+        if ($declarar->execute()) {
             return true;
         } else {
             return false;
@@ -167,7 +335,6 @@ class Producto {
     }
     
 }
-
 
 class Carrito {
     private $conn;
@@ -177,21 +344,22 @@ class Carrito {
     }
 
     public function obtenerCarrito() {
-        $sql = "SELECT c.id, c.clienteID, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
+        $sql = "SELECT c.id, cl.nombreCli AS cliente, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
                 FROM Carrito c
+                INNER JOIN Cliente cl ON c.clienteID = cl.id
                 INNER JOIN Producto p ON c.productoID = p.id
                 INNER JOIN Marca m ON p.marcaID = m.id
                 INNER JOIN Modelo mo ON p.modeloID = mo.id";
-    
-        $statement = $this->conn->prepare($sql);
-        if (!$statement) {
+        
+        $declarar = $this->conn->prepare($sql);
+        if (!$declarar) {
             header('Content-Type: application/json');
             echo json_encode(array('error' => 'Error de preparación de la consulta: ' . $this->conn->error));
             return;
         }
         
-        $statement->execute();
-        $resultado = $statement->get_result();
+        $declarar->execute();
+        $resultado = $declarar->get_result();
     
         if ($resultado->num_rows > 0) {
             $carritos = array();
@@ -205,14 +373,92 @@ class Carrito {
             echo json_encode(array('mensaje' => 'No se encontraron carritos'));
         }
     }
+
+    public function obtenerCarritoPorId($carritoID) {
+        $sql = "SELECT c.id AS carritoID, p.id AS productoID, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, c.cantidad, p.stock, p.precioUnidad
+                FROM Carrito c
+                INNER JOIN Producto p ON c.productoID = p.id
+                INNER JOIN Marca m ON p.marcaID = m.id
+                INNER JOIN Modelo mo ON p.modeloID = mo.id
+                WHERE c.id = ?";
+        
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $carritoID);
+        $statement->execute();
+        
+        $resultado = $statement->get_result();
+        
+        if ($resultado->num_rows > 0) {
+            $carrito = $resultado->fetch_assoc();
+            header('Content-Type: application/json');
+            echo json_encode($carrito);
+        } else {
+            header('Content-Type: application/json', true, 404);
+            echo json_encode(array('mensaje' => 'Carrito no encontrado'));
+        }
+    }
     
+    
+
+    public function eliminarProductosDelCarrito($productosIDs) {
+        if (empty($productosIDs)) {
+            http_response_code(400); 
+            echo json_encode(array('error' => 'No se proporcionaron IDs de productos para eliminar.'));
+            return;
+        }
+    
+        $marcadorP = implode(',', array_fill(0, count($productosIDs), '?'));
+        $sqlSelect = "SELECT productoID, cantidad FROM Carrito WHERE id IN ($marcadorP)";
+        $declararSelect = $this->conn->prepare($sqlSelect);
+    
+        if (!$declararSelect) {
+            http_response_code(500);
+            echo json_encode(array('error' => 'Error de preparación de la consulta: ' . $this->conn->error));
+            return;
+        }
+    
+        $tipos = str_repeat('i', count($productosIDs));
+        $declararSelect->bind_param($tipos, ...$productosIDs);
+        $declararSelect->execute();
+        $resultSelect = $declararSelect->get_result();
+        $productosActualizarStock = array();
+    
+        while ($fila = $resultSelect->fetch_assoc()) {
+            $productoID = $fila['productoID'];
+            $cantidad = $fila['cantidad'];
+            $productosActualizarStock[$productoID] = $cantidad;
+        }
+    
+        $sqlEliminar = "DELETE FROM Carrito WHERE id IN ($marcadorP)";
+        $declaEliminacion = $this->conn->prepare($sqlEliminar);
+        if (!$declaEliminacion) {
+            http_response_code(500);
+            echo json_encode(array('error' => 'Error de preparación de la consulta: ' . $this->conn->error));
+            return;
+        }
+    
+        $declaEliminacion->bind_param($tipos, ...$productosIDs);
+        if ($declaEliminacion->execute()) {
+            foreach ($productosActualizarStock as $productoID => $cantidad) {
+                $producto = new Producto();
+                $producto->actualizarStockAlEliminarDelCarrito($productoID, $cantidad);
+            }
+    
+            http_response_code(200); 
+            echo json_encode(array('mensaje' => 'Productos eliminados del carrito correctamente'));
+        } else {
+            http_response_code(500); 
+            echo json_encode(array('error' => 'Error al eliminar los productos del carrito: ' . $declaEliminacion->error));
+        }
+    }
+      
     function agregarAlCarrito($clienteID, $productoID, $cantidad) {
         
         $sqlStock = "SELECT stock FROM Producto WHERE id = ?";
-        $statementStock = $this->conn->prepare($sqlStock);
-        $statementStock->bind_param("i", $productoID);
-        $statementStock->execute();
-        $resultStock = $statementStock->get_result();
+        $declararStock = $this->conn->prepare($sqlStock);
+        $declararStock->bind_param("i", $productoID);
+        $declararStock->execute();
+        $resultStock = $declararStock->get_result();
     
         if ($resultStock->num_rows > 0) {
             $row = $resultStock->fetch_assoc();
@@ -227,15 +473,15 @@ class Carrito {
                 $sql = "INSERT INTO carrito (clienteID, productoID, cantidad) 
                         VALUES (?, ?, ?)";
     
-                $statement = $this->conn->prepare($sql);
-                $statement->bind_param("iii", $clienteID, $productoID, $cantidad);
+                $declarar = $this->conn->prepare($sql);
+                $declarar->bind_param("iii", $clienteID, $productoID, $cantidad);
     
-                if ($statement->execute()) {
+                if ($declarar->execute()) {
                     http_response_code(200); 
                     echo json_encode(array('mensaje' => 'Producto agregado al carrito correctamente'));
                 } else {
                     http_response_code(500); 
-                    echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $statement->error));
+                    echo json_encode(array('error' => 'Error al agregar el producto al carrito: ' . $declarar->error));
                 }
             } else {
                 http_response_code(400); 
@@ -246,30 +492,36 @@ class Carrito {
             echo json_encode(array('error' => 'No se encontró el producto'));
         }
     }
-    
-    public function eliminarDelCarrito($carritoID) {
-        $sql = "DELETE FROM Carrito WHERE id = ?";
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("i", $carritoID);
         
-        if ($statement->execute()) {
-            http_response_code(200);
-            echo json_encode(array('mensaje' => 'Producto eliminado del carrito correctamente'));
+    public function obtenerDetallesCarrito($carritoID) {
+        $sql = "SELECT c.id, cl.nombreCli AS cliente, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
+        FROM Carrito c
+        INNER JOIN Cliente cl ON c.clienteID = cl.id
+        INNER JOIN Producto p ON c.productoID = p.id
+        INNER JOIN Marca m ON p.marcaID = m.id
+        INNER JOIN Modelo mo ON p.modeloID = mo.id
+        WHERE c.id = ?";
+        
+        $declarar = $this->conn->prepare($sql);
+        $declarar->bind_param("i", $carritoID);
+        
+        if ($declarar->execute()) {
+            $result = $declarar->get_result();
+            $carrito = $result->fetch_assoc();
+            if ($carrito) {
+                return $carrito;
+            } else {
+                return null;
+            }
         } else {
-            http_response_code(500);
-            echo json_encode(array('error' => 'Error al eliminar el producto del carrito: ' . $statement->error));
+            return null;
         }
-    } 
+    }
+    
 }
 
 
-
-
-
-
-
-//GET 
-
+//----------------------GET----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/usuario') {
         $usuario = new Usuario();
@@ -283,66 +535,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/modelo') {
         $modelo = new Modelo();
         $modelo->obtenerModelos();
+    } elseif (preg_match('/\/Proyecto\/connect\/api.php\/modelo\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $modeloID = $matches[1];
+        $modelo = new Modelo();
+        $modelo->obtenerModeloPorID($modeloID);
     } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
         $producto = new Producto();
         $producto->obtenerProductos();
-    }elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
-        $producto = new Carrito();
-        $producto->obtenerCarrito();
-    }   
+    } elseif (preg_match('/\/Proyecto\/connect\/api.php\/producto\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $productoID = $matches[1];
+        $producto = new Producto();
+        $producto->obtenerProductoPorId($productoID);
+    } else if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
+        $carrito = new Carrito();
+        $carrito->obtenerCarrito();
+    } elseif (preg_match('/\/Proyecto\/connect\/api.php\/carrito\/detalles\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $carritoID = $matches[1];
+        $carrito = new Carrito();
+        $detallesCarrito = $carrito->obtenerDetallesCarrito($carritoID);
+    
+        if ($detallesCarrito) {
+            echo json_encode($detallesCarrito);
+        } else {
+            http_response_code(404);
+            echo json_encode(array('error' => 'El carrito no fue encontrado.'));
+        }
+    } elseif (preg_match('/\/Proyecto\/connect\/api.php\/carrito\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $carritoID = $matches[1];
+        $carrito = new Carrito();
+        $carrito->obtenerCarritoPorId($carritoID);
+    }
 }
 
-
-//POST
-
+//----------------------POST----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/cliente') {
-        $input = json_decode(file_get_contents('php://input'), true);
+        $entradaDatos = json_decode(file_get_contents('php://input'), true);
+        var_dump($entradaDatos);
 
-        if (isset($input['nombre'], $input['apellido'], $input['email'])) {
-            $nombre = $input['nombre'];
-            $apellido = $input['apellido'];
-            $email = $input['email'];
-
+        if (isset($entradaDatos['nombreCli'], $entradaDatos['apellido'], $entradaDatos['emailCli'])) {
+            $nombreCli = $entradaDatos['nombreCli'];
+            $apellido = $entradaDatos['apellido'];
+            $emailCli = $entradaDatos['emailCli'];
             $cliente = new Cliente();
-            $cliente->registrarCliente($nombre, $apellido, $email);
-        } else {
-            echo json_encode(array('error' => 'Se requieren nombre, apellido y email para registrar un cliente.'));
+            $cliente->agregarCliente($nombreCli, $apellido, $emailCli);
         }
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
-            $input = json_decode(file_get_contents('php://input'), true);
+    } else if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
+        $entradaDatos = json_decode(file_get_contents('php://input'), true);
+
+        if (isset($entradaDatos['clienteID'], $entradaDatos['productoID'], $entradaDatos['cantidad'])) {       
+            $clienteID = $entradaDatos['clienteID'];
+            $productoID = $entradaDatos['productoID'];
+            $cantidad = $entradaDatos['cantidad'];
+            $carrito = new Carrito();
+            $carrito->agregarAlCarrito($clienteID, $productoID, $cantidad);
+        } else {
+            echo json_encode(array('error' => 'Se requieren clienteID, productoID y cantidad para agregar un producto al carrito.'));
+        }
+    } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/modelo') {
+        $entradaDatos = json_decode(file_get_contents('php://input'), true);
     
-           
-            if (isset($input['clienteID'], $input['productoID'], $input['cantidad'])) {
-                
-                $clienteID = $input['clienteID'];
-                $productoID = $input['productoID'];
-                $cantidad = $input['cantidad'];
-    
-                $carrito = new Carrito();
-                $carrito->agregarAlCarrito($clienteID, $productoID, $cantidad);
-            } else {
-                echo json_encode(array('error' => 'Se requieren clienteID, productoID y cantidad para agregar un producto al carrito.'));
-            }
-        } 
+        if (isset($entradaDatos['nombre_modelo'])) {
+            $nombre_modelo = $entradaDatos['nombre_modelo'];
+            $modelo = new Modelo();
+            $modelo->agregarModelo($nombre_modelo);
+        } else {
+            echo json_encode(array('error' => 'Se requiere el nombre del modelo para agregar un nuevo modelo.'));
+        }
+    } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
+        $entradaDatos = json_decode(file_get_contents('php://input'), true);
+
+        if (isset($entradaDatos['marcaID'], $entradaDatos['modeloID'], $entradaDatos['stock'], $entradaDatos['precioUnidad'])) {       
+            $marcaID = $entradaDatos['marcaID'];
+            $modeloID = $entradaDatos['modeloID'];
+            $stock = $entradaDatos['stock'];
+            $precioUnidad = $entradaDatos['precioUnidad'];
+            $producto = new Producto();
+            $producto->agregarProducto($marcaID, $modeloID, $stock, $precioUnidad);
+        } else {
+            echo json_encode(array('error' => 'Se requieren marcaID, modeloID, stock y precioUnidad para agregar un nuevo producto.'));
+        }
+    } else {
+        echo json_encode(array('error' => 'La ruta solicitada no existe.'));
     }
-     
 }
 
-//PUT
-
-//Dudas ------------------
+//----------------------PUT----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
-      
-        $input = json_decode(file_get_contents('php://input'), true); 
-        if (isset($input['id_producto'], $input['precioUnidad'])) {
-            $id_producto = $input['id_producto'];
-            $nuevo_precio = $input['precioUnidad'];
+        $entradaDatos = json_decode(file_get_contents('php://input'), true); 
         
+        if (isset($entradaDatos['productoID'], $entradaDatos['precioUnidad'])) {
+            $productoID = $entradaDatos['productoID'];
+            $nuevo_precio = $entradaDatos['precioUnidad'];
             $producto = new Producto();
-            $producto->actualizarPrecio($id_producto, $nuevo_precio);
+            $producto->actualizarPrecio($productoID, $nuevo_precio);
         } else {
             $producto = new Producto();
             $producto->obtenerProductos();
@@ -350,36 +637,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 }
 
-
-//DELETE
-
+//----------------------DELETE----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    // Verificar la URI de la solicitud DELETE
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
-        // Leer el cuerpo de la solicitud en formato JSON
-        $inputJSON = file_get_contents('php://input');
-        // Decodificar el JSON en un array asociativo
-        $data = json_decode($inputJSON, true);
-        // Verificar si el ID del producto está presente en el array
-        if (isset($data['id'])) {
-            // Obtener el ID del producto
-            $carritoID = $data['id'];
-            // Llamar a la función para eliminar el producto del carrito
+        $entradaDatos = file_get_contents('php://input');
+        $info = json_decode($entradaDatos, true);
+        
+        if (isset($info['productosIDs'])) {
+            $productosIDs = $info['productosIDs'];
             $carrito = new Carrito();
-            $carrito->eliminarDelCarrito($carritoID);
+            $carrito->eliminarProductosDelCarrito($productosIDs);
         } else {
-            // Si no se proporcionó el ID del producto, devolver un error
             http_response_code(400);
-            echo json_encode(array('error' => 'No se proporcionó el ID del producto'));
+            echo json_encode(array('error' => 'No se proporcionaron los IDs de los productos a eliminar'));
+        }
+    } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
+        $entradaDatos = file_get_contents('php://input');
+        $info = json_decode($entradaDatos, true);
+
+        if (isset($info['productoID'])) {
+            $productoID = $info['productoID'];
+            $producto = new Producto();
+            $producto->eliminarProducto($productoID);
+        } else {
+            http_response_code(400);
+            echo json_encode(array('error' => 'No se proporcionó el ID del producto a eliminar'));
+        }
+    } elseif ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/cliente') {
+        $entradaDatos = file_get_contents('php://input');
+        $info = json_decode($entradaDatos, true);
+
+        if (isset($info['clienteID'])) {
+            $clienteID = $info['clienteID'];
+            $cliente = new Cliente();
+            $cliente->eliminarCliente($clienteID);
+        } else {
+            http_response_code(400);
+            echo json_encode(array('error' => 'No se proporcionó el ID del cliente a eliminar'));
         }
     } else {
-        // Si la URI de la solicitud DELETE no es la esperada, devolver un error
         http_response_code(404);
         echo json_encode(array('error' => 'La ruta solicitada no existe'));
     }
 }
-
-
-
 
 ?>

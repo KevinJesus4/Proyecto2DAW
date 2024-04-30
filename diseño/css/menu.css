@@ -2,15 +2,18 @@ body {
     background-color: whitesmoke;
 }
 
-#encabezado {
-    display: block !important; /* Asegura que el encabezado esté siempre visible */
-        background-color: #031d25 !important;
+#cabecera header {
+    display: block !important;
+    background-color: #031d25 !important;
 }
     
-
 #logoutForm .btn-danger:hover {
     background-color: #055259;
     border-color: #055259;
+}
+
+#cuerpo{
+    min-height: 90vh;    
 }
 
 .menu {
@@ -61,19 +64,47 @@ body {
     height: auto;
 }
 
+.pie {
+    background-color: #031d25;
+    color: #ffffff; 
+    padding: 20px 0; 
+    text-align: center; 
+    font-size: 14px;
+    min-height: 9vh;
+}
+
+#carrito {
+    color: red;
+}
+
+
+.pie p {
+    margin-bottom: 5px; 
+}
+
+.pie h4 {
+    color: #f0ad4e; 
+    margin-bottom: 10px; 
+}
+
+.custom-checkbox {
+    width: 35px; 
+    height: 35px;
+    
+}
 
 
 
 
 
 @media only screen and (max-width: 600px) {
-    /* Estilos específicos para pantallas pequeñas (por ejemplo, teléfonos) */
+   
 }
 
 @media only screen and (min-width: 601px) and (max-width: 1024px) {
-    /* Estilos específicos para tabletas */
+    
 }
 
 @media only screen and (min-width: 1025px) {
-    /* Estilos específicos para pantallas grandes (por ejemplo, computadoras de escritorio) */
+    
 }

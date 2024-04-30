@@ -1,3 +1,19 @@
+<?php
+session_start();
+
+require_once '../connect/token.php'; 
+
+$token = new Token();
+
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: iniciar_sesion.php");
+    exit();
+}
+if ($token->verificarToken($_SESSION['usuario_id'])) { 
+} else {
+    header("Location: ../view/iniciar_sesion.php");
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,23 +29,24 @@
         <form id="formularioCliente" method="POST">
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="nombre" name="nombre">
+                <input type="text" class="form-control" id="nombreCli">
             </div>
             <div class="mb-3">
                 <label for="apellido" class="form-label">Apellido</label>
-                <input type="text" class="form-control" id="apellido" name="apellido">
+                <input type="text" class="form-control" id="apellido">
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" id="email" name="email">
+                <input type="email" class="form-control" id="emailCli">
             </div>
-            <button type="submit" class="btn btn-primary custom-btn">Registrar Cliente</button>
+            <button type="submit" id="btnEnviar" class="btn btn-primary custom-btn">Registrar Cliente</button>
             <button id="btnMenu" class="btn btn-success custom-btn">Ir al Menú</button>
         </form>
     </div>
 
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../js/comprobaciones.js"></script>
     <script src="../js/funciones.js"></script>
 </body>
 </html>
