@@ -11,6 +11,15 @@ body {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
+#noscript-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+    /* Estilos para el mensaje de advertencia si no hay JavaScript */
+} 
+
 #container {
     display: flex;
     justify-content: center;

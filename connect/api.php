@@ -7,7 +7,7 @@ class Usuario {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-
+    // Funcion para seleccionar todos los usuarios y almacenarlos en una array.
     public function obtenerUsuarios() {
         $sql = "SELECT * FROM usuario";
         $resultado = $this->conn->query($sql);
@@ -31,7 +31,7 @@ class Marca {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-
+    //Funcion para obtener todas las marcas, para ello lo realizamos con select *
     public function obtenerMarcas() {
         $sql = "SELECT * FROM marca";
         $resultado = $this->conn->query($sql);
@@ -54,7 +54,7 @@ class Cliente {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-
+    // Obtenemos todos los clientes, lo utilizaremos para que nos muestre en una tabla
     public function obtenerClientes() {
         $sql = "SELECT * FROM cliente";
         $resultado = $this->conn->query($sql);
@@ -69,8 +69,7 @@ class Cliente {
             echo json_encode(array('mensaje' => 'No se han podido encontrar clientes'));
         }
     }
-
-
+    // Agregamos un nuevo cliente, para ello debemos realizar validaciones.
     public function agregarCliente($nombreCli, $apellido, $emailCli) {
         if (empty($nombreCli) || empty($apellido) || empty($emailCli)) {
             http_response_code(400);
@@ -102,9 +101,8 @@ class Cliente {
             error_log("Error al registrar el cliente: " . json_encode($mensaje));
         }
     }
-    
+    //Recibimos el id del cliente como parametro y lo eliminamos.
     public function eliminarCliente($clienteID) {
-   
         $sql = "DELETE FROM Cliente WHERE id = ?";
         $declarar = $this->conn->prepare($sql);
         $declarar->bind_param("i", $clienteID); //entero
@@ -128,7 +126,7 @@ class Modelo {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-
+    //Mostraremos una lista de los modelos disponibles.
     public function obtenerModelos() {
         $sql = "SELECT * FROM Modelo";
         $resultado = $this->conn->query($sql);
@@ -142,7 +140,7 @@ class Modelo {
             echo json_encode(array('mensaje' => 'No se encontraron modelos'));
         }
     }
-
+    //Mostraremos detalles de un modelo en especifico a traves de su id.
     public function obtenerModeloPorID($modeloID) {
         $sql = "SELECT * FROM Modelo WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -158,14 +156,14 @@ class Modelo {
             echo json_encode(array('mensaje' => 'Modelo no encontrado'));
         }
     }
-
+    //Agregamos un nuevo modelo con el parametro nombre_modelo, antes debemos realizar validaciones.
     public function agregarModelo($nombre_modelo) {
         if(empty($nombre_modelo)) {
-            echo json_encode(array('error' => 'El nombre del modelo no puede estar vacío'));
+            echo json_encode(array('error' => 'El no puede estar vacío'));
             return;
         }
         if (!preg_match('/^[a-zA-Z0-9\s]+$/', $nombre_modelo)) {
-            echo json_encode(array('error' => 'El nombre del modelo solo puede contener letras, números y espacios'));
+            echo json_encode(array('error' => 'El nombre del modelo solo debe tener letras, números y espacios'));
             return;
         }
         
@@ -175,7 +173,7 @@ class Modelo {
         $declarar->execute();
         $declarar->store_result();
         if ($declarar->num_rows > 0) {
-            echo json_encode(array('error' => 'El modelo ya existe'));
+            echo json_encode(array('error' => 'Este modelo ya existe'));
             return;
         }
         
@@ -197,7 +195,7 @@ class Producto {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-    
+    //Mostramos todos los productos.
     public function obtenerProductos() {
         $sql = "SELECT p.id, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, p.stock, p.precioUnidad
                 FROM Producto p
@@ -216,7 +214,7 @@ class Producto {
             echo json_encode(array('mensaje' => 'No se encontraron productos'));
         }
     }
-
+    //Mostramos un producto en especifico  utilizando su id.
     public function obtenerProductoPorId($productoId) {
         $sql = "SELECT p.id, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, p.stock, p.precioUnidad
         FROM Producto p
@@ -240,7 +238,7 @@ class Producto {
             echo json_encode(array('mensaje' => 'Producto no encontrado'));
         }
     }
-    
+    //Agregamos un nuevo producto, antes de eso debemos realizar las validaciones.
     public function agregarProducto($marcaID, $modeloID, $stock, $precioUnidad) {
 
         if (empty($marcaID) || empty($modeloID) || empty($stock) || empty($precioUnidad) ||
@@ -269,7 +267,7 @@ class Producto {
             echo json_encode(array('error' => 'Error al agregar el nuevo producto: ' . $declarar->error));
         }
     }
-   
+    //Actualizamos el precio de un producto, antes de ello debemos validar el campo.
     public function actualizarPrecio($productoID, $nuevo_precio) {
 
         if (!preg_match('/^[0-9]+(?:\.[0-9]+)?$/', $nuevo_precio)) {
@@ -298,7 +296,7 @@ class Producto {
             echo json_encode(array('error' => 'El producto que estas indicando no existe'));
         }
     }
-    
+    //Utilizamos para actualizar el precio de un producto.
     public function actualizarStock($productoID, $nuevoStock) {
         $sql = "UPDATE Producto SET stock = ? WHERE id = ?";
         $declarar = $this->conn->prepare($sql);
@@ -309,7 +307,7 @@ class Producto {
             return false;
         }
     }
-
+    //Elimina un producto mediante su id.
     public function eliminarProducto($productoID) {
         $sql = "DELETE FROM Producto WHERE id = ?";
         $declarar = $this->conn->prepare($sql);
@@ -321,8 +319,8 @@ class Producto {
             echo json_encode(array('error' => 'Error al eliminar el producto: ' . $declarar->error));
         }
     }
-
-    public function actualizarStockAlEliminarDelCarrito($productoID, $cantidad) {
+    //Cuando eliminamos un carrito actualizara el stock del carrito, ya que devolvera la cantidad a stock.
+    public function actualizarStockEliminarDelCarrito($productoID, $cantidad) {
         $sql = "UPDATE Producto SET stock = stock + ? WHERE id = ?";
         $declarar = $this->conn->prepare($sql);
         $declarar->bind_param("ii", $cantidad, $productoID);
@@ -333,7 +331,6 @@ class Producto {
             return false;
         }
     }
-    
 }
 
 class Carrito {
@@ -342,7 +339,7 @@ class Carrito {
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
-
+    //Obtenemos todos los datos del carrito
     public function obtenerCarrito() {
         $sql = "SELECT c.id, cl.nombreCli AS cliente, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
                 FROM Carrito c
@@ -373,7 +370,7 @@ class Carrito {
             echo json_encode(array('mensaje' => 'No se encontraron carritos'));
         }
     }
-
+    //Obtenemos los datos de un carrito en especifico mediante su id
     public function obtenerCarritoPorId($carritoID) {
         $sql = "SELECT c.id AS carritoID, p.id AS productoID, p.marcaID, m.nombre_marca, p.modeloID, mo.nombre_modelo, c.cantidad, p.stock, p.precioUnidad
                 FROM Carrito c
@@ -397,9 +394,7 @@ class Carrito {
             echo json_encode(array('mensaje' => 'Carrito no encontrado'));
         }
     }
-    
-    
-
+    //Eliminamos uno o varios carritos segun su id.
     public function eliminarProductosDelCarrito($productosIDs) {
         if (empty($productosIDs)) {
             http_response_code(400); 
@@ -441,7 +436,7 @@ class Carrito {
         if ($declaEliminacion->execute()) {
             foreach ($productosActualizarStock as $productoID => $cantidad) {
                 $producto = new Producto();
-                $producto->actualizarStockAlEliminarDelCarrito($productoID, $cantidad);
+                $producto->actualizarStockEliminarDelCarrito($productoID, $cantidad);
             }
     
             http_response_code(200); 
@@ -451,7 +446,7 @@ class Carrito {
             echo json_encode(array('error' => 'Error al eliminar los productos del carrito: ' . $declaEliminacion->error));
         }
     }
-      
+    //Agregamos un producto al carrito, para ello debe verificar el stock.
     function agregarAlCarrito($clienteID, $productoID, $cantidad) {
         
         $sqlStock = "SELECT stock FROM Producto WHERE id = ?";
@@ -492,7 +487,7 @@ class Carrito {
             echo json_encode(array('error' => 'No se encontró el producto'));
         }
     }
-        
+    //Obtenemos detalles de un carrito en concreto mediante la id.
     public function obtenerDetallesCarrito($carritoID) {
         $sql = "SELECT c.id, cl.nombreCli AS cliente, m.nombre_marca, mo.nombre_modelo, c.cantidad, p.precioUnidad 
         FROM Carrito c
@@ -517,9 +512,7 @@ class Carrito {
             return null;
         }
     }
-    
 }
-
 
 //----------------------GET----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -566,7 +559,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $carrito->obtenerCarritoPorId($carritoID);
     }
 }
-
 //----------------------POST----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/cliente') {
@@ -619,7 +611,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(array('error' => 'La ruta solicitada no existe.'));
     }
 }
-
 //----------------------PUT----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/producto') {
@@ -636,7 +627,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         }
     }
 }
-
 //----------------------DELETE----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     if ($_SERVER['REQUEST_URI'] === '/Proyecto/connect/api.php/carrito') {
@@ -680,5 +670,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         echo json_encode(array('error' => 'La ruta solicitada no existe'));
     }
 }
-
 ?>

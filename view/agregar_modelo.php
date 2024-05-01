@@ -1,8 +1,6 @@
 <?php
 session_start();
-
 require_once '../connect/token.php'; 
-
 $token = new Token();
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -39,6 +37,10 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
             <button id="btnMenu" class="btn btn-success custom-btn">Ir al Menú</button>
         </form>
     </div>
+    <noscript id="noscript-message">
+        <h1>Error: JavaScript está deshabilitado</h1>
+        <p>El JavaScript ha sido deshabilitado. Por favor, vuelva a habilitarlo para utilizar la página de manera correcta. Gracias.</p>
+    </noscript>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../js/comprobaciones.js"></script>

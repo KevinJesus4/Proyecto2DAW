@@ -7,38 +7,38 @@ class Token {
     public function __construct() {
         $this->conexion = connection::dbConnection();
     }
-
+    //Generamos un token aleatorio
     private function generarToken() {
         return bin2hex(random_bytes(32)); 
     }
-
-    public function insertarToken($usuarioID) {
-        $session_duration = 3 * 60; 
+    //Agregamos un token en la base de datos mediante el id del usuario.
+    public function agregarToken($usuarioID) {
+        $duracionSesion = 3 * 60; 
     
         $token = $this->generarToken();
-        $token_expiracion = date('Y-m-d H:i:s', time() + $session_duration);
+        $token_expiracion = date('Y-m-d H:i:s', time() + $duracionSesion);
     
         $query = "INSERT INTO token (token, fecha_expiracion, usuarioID) VALUES (?, ?, ?)";
-        $statement = $this->conexion->prepare($query);
-        $statement->bind_param("sss", $token, $token_expiracion, $usuarioID);
-        $statement->execute();
+        $declaramos = $this->conexion->prepare($query);
+        $declaramos->bind_param("sss", $token, $token_expiracion, $usuarioID);
+        $declaramos->execute();
     }
-    
+    //Verificamos si el token mas reciente aun no ha expirado, para ello debe comparar la fecha con la fecha actual.
     public function verificarToken($usuarioID) {
-        $current_time = date('Y-m-d H:i:s');
+        $tiempo_actual = date('Y-m-d H:i:s');
         $query = "SELECT * FROM token WHERE usuarioID = ? ORDER BY fecha_expiracion DESC LIMIT 1";
         
-        $statement = $this->conexion->prepare($query);
-        $statement->bind_param("i", $usuarioID);
-        $statement->execute();
+        $declaramos = $this->conexion->prepare($query);
+        $declaramos->bind_param("i", $usuarioID);
+        $declaramos->execute();
 
-        $result = $statement->get_result();
+        $result = $declaramos->get_result();
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $token = $row['token'];
             $expiracion = $row['fecha_expiracion'];
             
-            if ($expiracion > $current_time) {
+            if ($expiracion > $tiempo_actual) {
                 // echo "Token obtenido correctamente.\n";
                 // echo "Token actual: $token\n";
                 // echo "Fecha de expiración: $expiracion\n";

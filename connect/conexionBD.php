@@ -1,13 +1,12 @@
 <?php
 
 class connection{
-
+    //Establece una conexion con nuestra base de datos.
     static public function dbConnection(){
         $servername = "localhost";
         $database = "kevstore";
         $username = "root";
         $password = "";
-
         $conn = mysqli_connect($servername, $username, $password, $database);
 
         if (!$conn) {
@@ -18,9 +17,7 @@ class connection{
         
     }
 
-    //TODO: Quitar esto porque sin esto funciona.
     static public function conectado(){
-
         try{
             $link = new PDO(
                 "mysql:host=localhost;dbname=kevstore",
@@ -33,7 +30,6 @@ class connection{
         }catch(PDOException $e){
             die("Error: ".$e->getMessage());
         }
-
         return $link;
     }
 }

@@ -44,6 +44,10 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
         </form>
     </div>
 
+    <noscript id="noscript-message">
+        <h1>Error: JavaScript está deshabilitado</h1>
+        <p>El JavaScript ha sido deshabilitado. Por favor, vuelva a habilitarlo para utilizar la página de manera correcta. Gracias.</p>
+    </noscript>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../js/comprobaciones.js"></script>

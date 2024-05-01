@@ -27,6 +27,11 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
 
 </head>
 <body>
+    <noscript id="noscript-message">
+        <h1>Error: JavaScript está deshabilitado</h1>
+        <p>El JavaScript ha sido deshabilitado. Por favor, vuelva a habilitarlo para utilizar la página de manera correcta. Gracias.</p>
+    </noscript>
+
     <div id="cabecera" class="cabecera">
         <header class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
@@ -42,13 +47,13 @@ if ($token->verificarToken($_SESSION['usuario_id'])) {
     <div id="cuerpo">
         <nav class="menu">
             <ul>
-                <li><a href="#" onclick="mostrarContenido('inicio')">Inicio</a></li>
-                <li><a href="#" onclick="mostrarContenido('marcas')">Marcas</a></li>
-                <li><a href="#" onclick="mostrarContenido('modelos')">Modelos</a></li>
-                <li><a href="#" onclick="mostrarContenido('productos')">Productos</a></li>
-                <li><a href="#" onclick="mostrarContenido('comprar')">Comprar</a></li>
-                <li><a href="#" onclick="mostrarContenido('clientes')">Clientes</a></li>
-                <li><a href="#" onclick="mostrarContenido('carrito')">Carrito</a></li>
+                <li><a href="#" onclick="mostrarContenedores('inicio')">Inicio</a></li>
+                <li><a href="#" onclick="mostrarContenedores('marcas')">Marcas</a></li>
+                <li><a href="#" onclick="mostrarContenedores('modelos')">Modelos</a></li>
+                <li><a href="#" onclick="mostrarContenedores('productos')">Productos</a></li>
+                <li><a href="#" onclick="mostrarContenedores('comprar')">Comprar</a></li>
+                <li><a href="#" onclick="mostrarContenedores('clientes')">Clientes</a></li>
+                <li><a href="#" onclick="mostrarContenedores('carrito')">Carrito</a></li>
             </ul>
         </nav><br>
 

@@ -2,6 +2,16 @@ body {
     background-color: whitesmoke;
 }
 
+
+#noscript-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+} 
+
+
 #cabecera header {
     display: block !important;
     background-color: #031d25 !important;

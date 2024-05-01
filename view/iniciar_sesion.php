@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
     <title>Login</title>
 </head>
 <body>
+    
     <div id="container">
         <div id="login_cont" class="login-form-container">
             <h2>Login</h2>
@@ -37,5 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
             </form>
         </div>
     </div>
+    <noscript id="noscript-message">
+        <h1>Error: JavaScript está deshabilitado</h1>
+        <p>El JavaScript ha sido deshabilitado. Por favor, vuelva a habilitarlo para utilizar la página de manera correcta. Gracias.</p>
+    </noscript>
 </body>
 </html>

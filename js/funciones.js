@@ -1,12 +1,12 @@
-function mostrarContenido(seccion) {
-
-    if (seccion === 'inicio') {
+//Mostramos los div que estaban ocultos
+function mostrarContenedores(apartados) {
+    if (apartados === 'inicio') {
         window.location.href = '/proyecto/view/menu.php';
     } else {
         $('.container').hide();
-        $('#' + seccion).show();
+        $('#' + apartados).show();
 
-        switch (seccion) {
+        switch (apartados) {
             case 'marcas':
                 obtenerMarcas();
                 break;
@@ -31,7 +31,7 @@ function mostrarContenido(seccion) {
     }
 }
 
-
+//Mostramos en una tabla las marcas
 function obtenerMarcas() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/marca',
@@ -59,7 +59,7 @@ function obtenerMarcas() {
     });
 }
 
-
+//Actualizamos el select con marca
 function selectMarcaID() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/marca',
@@ -82,7 +82,7 @@ $(document).ready(function() {
     selectMarcaID();
 });
 
-
+//Mostramos en una tabla las modelos
 function obtenerModelos() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/modelo',
@@ -92,7 +92,7 @@ function obtenerModelos() {
             $('#modelos').empty();
 
             var filtroId = $('<input>').attr('type', 'text').attr('id', 'idFiltroModelo').addClass('form-control').attr('placeholder', 'Filtrar por ID Modelo');
-            var botonFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Filtrar').click(function() {
+            var accionFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Filtrar').click(function() {
                 var idFiltro = $('#idFiltroModelo').val();
                 filtrarModelosPorId(idFiltro);
             });
@@ -104,7 +104,7 @@ function obtenerModelos() {
                         filtroId
                     ),
                     $('<div>').addClass('col-auto').append(
-                        botonFiltrar
+                        accionFiltrar
                     ),
                     $('<div>').addClass('col-auto').append(
                         btnAgregarModelo
@@ -143,7 +143,7 @@ function obtenerModelos() {
     });
 }
 
-
+//Filtramos los modelos por su id
 function filtrarModelosPorId(modeloID) {
     var filas = $('#modelos tbody tr');
     filas.hide();
@@ -155,7 +155,7 @@ function filtrarModelosPorId(modeloID) {
     });
 }
 
-
+//Actualizamos el select con modelo
 function selectModeloID() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/modelo',
@@ -196,7 +196,6 @@ function agregarModelo() {
             success: function(response) {
                 if (response.hasOwnProperty('error')) {
                     console.error('Error al agregar el modelo:', response.error);
-                    //alert('Error al agregar el modelo. Consulta la consola para más detalles sobre el error.');
                 } else {
                     alert('Modelo agregado exitosamente:', response.mensaje);
                 }
@@ -214,7 +213,7 @@ $(document).ready(function() {
     agregarModelo();
 });
 
-
+//Mostramos en una tabla las clientes y creamos botones
 function obtenerClientes() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/cliente',
@@ -254,7 +253,7 @@ function obtenerClientes() {
             $('#clientes').append(btnRegistrarCliente);
 
             $('#btnRegistrarCliente').click(function() {
-                window.location.href = '/Proyecto/view/registrar_usuario.php';
+                window.location.href = '/Proyecto/view/agregar_usuario.php';
             });
         },
         error: function(xhr, status, error) {
@@ -269,7 +268,7 @@ $(document).ready(function() {
 });
 
 
-
+//Eliminamos el cliente segun su id
 function eliminarCliente(idCliente) {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/cliente',
@@ -286,10 +285,8 @@ function eliminarCliente(idCliente) {
     });
 }
 
-
+//Obtenemos los datos del formulario, lo validamos y registramos el nuevo cliente
 function registrarCliente() {
-    //console.log('La función registrarCliente() se está ejecutando correctamente.');
-
     $('#formularioCliente').submit(function(event) {
         event.preventDefault(); 
         var nombreCli = $('#nombreCli').val();
@@ -301,6 +298,8 @@ function registrarCliente() {
             alert('Error: Todos los campos deben estar rellenos..');
             return;
         }
+
+        
 
         var datos ={
             nombreCli: nombreCli, 
@@ -333,7 +332,7 @@ $(document).ready(function() {
 
 
 
-function clienteSelect(callback) {
+function clienteSelect(llamar) {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/cliente',
         type: 'GET',
@@ -342,8 +341,8 @@ function clienteSelect(callback) {
             console.log('Respuesta de la API:', response);
             var clientes = response;
 
-            if (typeof callback === 'function') {
-                callback(clientes);
+            if (typeof llamar === 'function') {
+                llamar(clientes);
             }
         },
         error: function(xhr, status, error) {
@@ -352,7 +351,7 @@ function clienteSelect(callback) {
     });
 }
 
-
+//Mostramos en una tabla las productos y creamos botones
 function obtenerProductos() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/producto',
@@ -362,7 +361,7 @@ function obtenerProductos() {
             $('#productos').empty();
 
             var filtroId = $('<input>').attr('type', 'text').attr('id', 'idFiltro').addClass('form-control').attr('placeholder', 'Filtrar Producto por su ID');
-            var botonFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Filtrar').click(function() {
+            var accionFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Filtrar').click(function() {
                 var idFiltro = $('#idFiltro').val();
                 filtrarProductosPorId(idFiltro);
             });
@@ -376,7 +375,7 @@ function obtenerProductos() {
                         filtroId
                     ),
                     $('<div>').addClass('col-auto').append(
-                        botonFiltrar
+                        accionFiltrar
                     ),
                     $('<div>').addClass('col-auto').append(
                         botonNuevoProducto,
@@ -514,7 +513,7 @@ $('#btnMenu').click(function() {
     window.location.href = '/Proyecto/view/menu.php'; 
 });
 
-
+//Mostramos en una tabla las productos y creamos botones para comprar
 function obtenerCompras() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/producto',
@@ -566,13 +565,6 @@ function obtenerCompras() {
             });
           
             $('#comprar').append(table);
-
-            // var btnCambiarPrecio = $('<button>').attr('id', 'btnCambiarPrecio').addClass('btn btn-outline-primary').text('Cambiar Precio');
-            // $('#comprar').append(btnCambiarPrecio);
-        
-            // $('#btnCambiarPrecio').click(function() {
-            //     window.location.href = '/Proyecto/view/actualizar_precio.php';
-            // });
         },
         error: function(xhr, status, error) {
             console.error('Error al obtener productos:', error);
@@ -644,7 +636,7 @@ function agregarAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
-
+//Mostramos en una tabla las Carrito, creamos botones y checkboxs
 function obtenerCarrito() {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/carrito',
@@ -654,7 +646,7 @@ function obtenerCarrito() {
             $('#carrito').empty();
 
             var filtroId = $('<input>').attr('type', 'text').attr('id', 'idFiltroCarrito').addClass('form-control').attr('placeholder', 'Filtrar Carrito por su ID');
-            var botonFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Buscar').click(function() {
+            var accionFiltrar = $('<button>').addClass('btn btn-outline-primary').text('Buscar').click(function() {
                 var idFiltro = $('#idFiltroCarrito').val();
                 filtrarCarritoPorId(idFiltro);
             });
@@ -675,7 +667,7 @@ function obtenerCarrito() {
                         filtroId
                     ),
                     $('<div>').addClass('col-auto').append(
-                        botonFiltrar
+                        accionFiltrar
                     ),
                     $('<div>').addClass('col-auto').append(
                         botonEliminarSeleccionados
@@ -703,7 +695,7 @@ function obtenerCarrito() {
             response.forEach(function(item) {
                 var row = $('<tr>').append(
                     $('<td>').text(item.id),
-                    $('<td>').text(item.cliente),
+                    $('<td>').html('<a href="detalle_cliente.php?id=' + item.id + '">' + item.cliente + '</a>'),
                     $('<td>').text(item.nombre_marca),
                     $('<td>').text(item.nombre_modelo),
                     $('<td>').text(item.cantidad),
@@ -744,6 +736,7 @@ function filtrarCarritoPorId(carritoID) {
 }
 
 
+//Mostramos en un alert info mas detallada
 function obtenerDetallesCarrito(carritoID) {
     $.ajax({
         url: 'http://localhost/Proyecto/connect/api.php/carrito/detalles/' + carritoID,
@@ -758,8 +751,8 @@ function obtenerDetallesCarrito(carritoID) {
             mensaje += "MARCA: " + item.nombre_marca + "\n";
             mensaje += "MODELO: " + item.nombre_modelo + "\n";
             mensaje += "CANTIDAD: " + item.cantidad + "\n";
-            mensaje += "PRECIO UNIDAD: " + item.precioUnidad + "\n";
-            mensaje += "\n" + "SUBTOTAL: " + subtotal + "\n"; 
+            mensaje += "PRECIO UNIDAD: " + item.precioUnidad + ' €' + "\n";
+            mensaje += "\n" + "SUBTOTAL: " + subtotal +  ' €' + "\n"; 
 
             alert(mensaje);
             console.log(mensaje);
@@ -792,24 +785,6 @@ function eliminarProductosSeleccionados(productosSeleccionados) {
     });
 }
 
-//TODO: Dudas aqui 
-// function eliminarDelCarrito(carritoID) {
-//     $.ajax({
-//         url: 'http://localhost/Proyecto/connect/api.php/carrito',
-//         type: 'DELETE',
-//         dataType: 'json',
-//         contentType: 'application/json',
-//         data: JSON.stringify({ id: carritoID }), 
-//         success: function(response) {
-//             console.log('Producto eliminado del carrito:', response);
-//             alert('Producto eliminado del carrito exitosamente');
-//             obtenerCarrito();
-//         },
-//         error: function(xhr, status, error) {
-//             console.error('Error al eliminar producto del carrito:', error);
-//         }
-//     });
-// }
 
 
 

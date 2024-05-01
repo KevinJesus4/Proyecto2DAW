@@ -1,3 +1,4 @@
+/*VALIDA USUARIO*/
 function validaFormulario() {
     var usuario = document.getElementById("usuario").value;
     var clave = document.getElementById("clave").value;
@@ -19,6 +20,11 @@ function validaFormulario() {
 function validarNombreModelo(nombreModelo) {
     if (nombreModelo.trim() === '') {
         alert('El nombre del modelo no puede estar vacío');
+        return false;
+    }
+    var regex = /^[a-zA-Z0-9\s]+$/;
+    if (!regex.test(nombreModelo)) {
+        alert('El nombre del modelo solo puede contener letras, números y espacios');
         return false;
     }
     return true;
@@ -63,9 +69,14 @@ function enviarFormularioAgregarProducto() {
 
 /*VALIDAR CLIENTE*/
 function validarNombreCliente(nombreCliente) {
+    if (nombreCliente.trim() === '') {
+        alert('El nombre del cliente no puede estar vacío');
+        return false;
+    }
+
     var regex = /^[a-zA-Z\s]+$/;
     if (!regex.test(nombreCliente)) {
-        alert('El nombre solo puede contener letras y espacios');
+        alert('El nombre del cliente solo puede contener letras y espacios');
         return false;
     }
     return true;
@@ -91,6 +102,10 @@ function enviarFormularioRegistroCliente() {
     }
     return true;
 }
+
+
+
+
 
 
 
